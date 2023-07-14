@@ -9,13 +9,9 @@ library(mlr3misc)
 library(future)
 library(future.apply)
 
-
-
-
 # SETUP -------------------------------------------------------------------
 # create folder in which we will save results
-time_ = format.POSIXct(Sys.time(), format = "%Y%m%d%H%M%S")
-mlr3_save_path = paste0("./H2-", time_)
+mlr3_save_path = paste0("./H2-jobarray-", Sys.getenv('PBS_ARRAY_ID'))
 if (!dir.exists(mlr3_save_path)) {
   dir.create(mlr3_save_path)
 }
@@ -25,8 +21,6 @@ monnb <- function(d) {
   lt <- as.POSIXlt(as.Date(d, origin="1900-01-01"))
   lt$year*12 + lt$mon }
 mondf <- function(d1, d2) { monnb(d2) - monnb(d1) }
-
-
 
 # PREPARE DATA ------------------------------------------------------------
 print("Prepare data")
@@ -151,11 +145,11 @@ nested_cv_split = function(task,
                            train_length = 60,
                            tune_length = 6,
                            test_length = 1) {
-
+  
   # create cusom CV's for inner and outer sampling
   custom_inner = rsmp("custom")
   custom_outer = rsmp("custom")
-
+  
   # get year month id data
   # task = task_ret_week$clone()
   task_ = task$clone()
@@ -163,21 +157,21 @@ nested_cv_split = function(task,
                                     rows = 1:task_$nrow)
   stopifnot(all(task_$row_ids == yearmonthid_$`..row_id`))
   groups_v = yearmonthid_[, unlist(unique(yearmonthid))]
-
+  
   # util vars
   start_folds = 1:(length(groups_v)-train_length-tune_length-test_length)
   get_row_ids = function(mid) unlist(yearmonthid_[yearmonthid %in% mid, 2], use.names = FALSE)
-
+  
   # create train data
   train_groups <- lapply(start_folds,
                          function(x) groups_v[x:(x+train_length-1)])
   train_sets <- lapply(train_groups, get_row_ids)
-
+  
   # create tune set
   tune_groups <- lapply(start_folds,
                         function(x) groups_v[(x+train_length):(x+train_length+tune_length-1)])
   tune_sets <- lapply(tune_groups, get_row_ids)
-
+  
   # test train and tune
   test_1 = vapply(seq_along(train_groups), function(i) {
     mondf(
@@ -190,13 +184,13 @@ nested_cv_split = function(task,
     unlist(head(tune_sets[[i]], 1) - tail(train_sets[[i]], 1))
   }, FUN.VALUE = numeric(1L))
   stopifnot(all(test_2 == 1))
-
+  
   # create test sets
   insample_length = train_length + tune_length
   test_groups <- lapply(start_folds,
                         function(x) groups_v[(x+insample_length):(x+insample_length+test_length-1)])
   test_sets <- lapply(test_groups, get_row_ids)
-
+  
   # test tune and test
   test_3 = vapply(seq_along(train_groups), function(i) {
     mondf(
@@ -209,7 +203,7 @@ nested_cv_split = function(task,
     unlist(head(test_sets[[i]], 1) - tail(tune_sets[[i]], 1))
   }, FUN.VALUE = numeric(1L))
   stopifnot(all(test_2 == 1))
-
+  
   # create inner and outer resamplings
   custom_inner$instantiate(task, train_sets, tune_sets)
   inner_sets = lapply(seq_along(train_groups), function(i) {
@@ -300,6 +294,11 @@ graph_pca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
 plot(graph_pca)
 graph_pca_lrn = as_learner(graph_pca)
 
+# threads
+threads = as.integer(Sys.getenv("NCPUS"))
+set_threads(graph_pca_lrn, n = threads)
+set_threads(graph_nonpca_lrn, n = threads)
+
 # pca params
 as.data.table(graph_pca_lrn$param_set)[, .(id, class, lower, upper)]
 search_space = ps(
@@ -316,27 +315,23 @@ search_space = ps(
 design = rbindlist(generate_design_grid(search_space, 20)$transpose(), fill = TRUE)
 design
 
-
-
 # NESTED CV BENCHMARK -----------------------------------------------------
 print("Benchmark")
 
 # nested for loop
-future::plan("multicore")
 list.files(mlr3_save_path, full.names = TRUE)
-start_time = Sys.time()
-future_lapply(1:custom_inner$iters, function(i) {
+nested_cv_benchmark <- function(i) {
+  
   # debug
-  # i = 1
   print(i)
-
+  
   # inner resampling
   print("Define CV")
   custom_ = rsmp("custom")
   custom_$instantiate(task_ret_week,
                       list(custom_inner$train_set(i)),
                       list(custom_inner$test_set(i)))
-
+  
   # auto tuner
   print("Define autotuner")
   at_pca = auto_tuner(
@@ -346,12 +341,12 @@ future_lapply(1:custom_inner$iters, function(i) {
     measure = msr("regr.mse"),
     search_space = search_space
   )
-
+  
   # outer resampling
   print("Define outer CV")
   customo_ = rsmp("custom")
   customo_$instantiate(task_ret_week, list(custom_outer$train_set(i)), list(custom_outer$test_set(i)))
-
+  
   # nested CV for one round
   print("Benchmark!")
   design = benchmark_grid(
@@ -360,13 +355,17 @@ future_lapply(1:custom_inner$iters, function(i) {
     resamplings = customo_
   )
   system.time({bmr = benchmark(design, store_models = TRUE)})
-
+  
   # save locally and to list
   print("Save")
   time_ = format.POSIXct(Sys.time(), format = "%Y%m%d%H%M%S")
   saveRDS(bmr, file.path(mlr3_save_path, paste0(i, "-", time_, ".rds")))
   return(NULL)
+  
+}
 
-})
+i = as.integer(Sys.getenv('PBS_ARRAY_INDEX'))
+start_time = Sys.time()
+nested_cv_benchmark(i)
 end_time = Sys.time()
 end_time - start_time
