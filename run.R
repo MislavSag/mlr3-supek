@@ -266,6 +266,20 @@ mlr_measures$add("adjloss2", AdjLoss2)
 # GRAPH V2 ----------------------------------------------------------------
 print("Create graph")
 
+# cretate learners graph node
+learners_l = list(
+  ranger  = lrn("regr.ranger", id = "ranger"),
+  xgboost = lrn("regr.xgboost", id = "xgboost"),
+  bart    = lrn("regr.bart", id = "bart"),
+  nnet    = lrn("regr.nnet", id = "nnet")
+)
+
+# create regression average of all learners
+choices = c("ranger", "xgboost", "bart", "nnet")
+learners = po("branch", choices) %>>% 
+  gunion(learners_l) %>>%
+  po("unbranch")
+
 # non pca ghraph
 graph_nonpca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
   po("dropna", id = "dropna") %>>%
@@ -275,7 +289,7 @@ graph_nonpca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
   po("dropcorr", id = "dropcorr", cutoff = 0.99) %>>%
   po("uniformization") %>>%
   po("dropna", id = "dropna_v2") %>>%
-  po("learner", learner = lrn("regr.ranger"))
+  learners
 plot(graph_nonpca)
 graph_nonpca_lrn = as_learner(graph_nonpca)
 
@@ -290,7 +304,7 @@ graph_pca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
   po("dropna", id = "dropna_v2") %>>%
   # po("pca") %>>%
   po("pca_explained", var. = 0.99) %>>%
-  po("learner", learner = lrn("regr.ranger"))
+  learners
 plot(graph_pca)
 graph_pca_lrn = as_learner(graph_pca)
 

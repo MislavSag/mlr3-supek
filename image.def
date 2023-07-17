@@ -26,6 +26,9 @@ From: r-base:4.3.0
   R --slave -e 'install.packages("ranger")'
   R --slave -e 'install.packages("R6")'
   R --slave -e 'install.packages("bit64")'
+  R --slave -e 'install.packages("xgboost")'
+  R --slave -e 'install.packages("dbarts")'
+  R --slave -e 'install.packages("nnet")'
 
 %runscript
   Rscript $@
