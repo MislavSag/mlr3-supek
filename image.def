@@ -29,6 +29,8 @@ From: r-base:4.3.0
   R --slave -e 'install.packages("xgboost")'
   R --slave -e 'install.packages("dbarts")'
   R --slave -e 'install.packages("nnet")'
+  R --slave -e 'install.packages("mlr3extralearners")'  
+  
 
 %runscript
   Rscript $@

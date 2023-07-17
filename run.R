@@ -8,6 +8,8 @@ library(mlr3tuning)
 library(mlr3misc)
 library(future)
 library(future.apply)
+library(mlr3extralearners)
+
 
 # SETUP -------------------------------------------------------------------
 # create folder in which we will save results
