@@ -31,7 +31,7 @@ mondf <- function(d1, d2) { monnb(d2) - monnb(d1) }
 print("Prepare data")
 
 # read predictors
-data_tbl = fread("./pead-predictors.csv")
+data_tbl = fread("./pead-predictors-update.csv")
 
 # convert tibble to data.table
 DT = as.data.table(data_tbl)
