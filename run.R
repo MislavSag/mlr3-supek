@@ -276,7 +276,7 @@ learners_l = list(
   ranger  = lrn("regr.ranger", id = "ranger"),
   xgboost = lrn("regr.xgboost", id = "xgboost"),
   bart    = lrn("regr.bart", id = "bart"),
-  nnet    = lrn("regr.nnet", id = "nnet")
+  nnet    = lrn("regr.nnet", id = "nnet", MaxNWts = 40000)
 )
 
 # create regression average of all learners

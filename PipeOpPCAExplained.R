@@ -30,6 +30,7 @@ PipeOpPCAExplained = R6::R6Class(
                     rank. = n_components)
       self$state = pcr
       self$state$x = NULL
+      # self$state$n_components = n_components
       pcr$x
     },
 
