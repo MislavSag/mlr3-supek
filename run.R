@@ -9,6 +9,9 @@ library(mlr3misc)
 library(future)
 library(future.apply)
 library(mlr3extralearners)
+library(torch)
+library(mlr3torch)
+
 
 
 # SETUP -------------------------------------------------------------------
@@ -317,6 +320,7 @@ set_threads(graph_nonpca_lrn, n = threads)
 
 # pca params
 as.data.table(graph_pca_lrn$param_set)[, .(id, class, lower, upper)]
+as.data.table(graph_pca_lrn$param_set)[1:100, .(id, class, lower, upper)]
 search_space = ps(
   pca_explained.var. = p_fct(levels = c("0.90", "0.95", "0.99"),
                              trafo = function(x, param_set) {
@@ -324,7 +328,9 @@ search_space = ps(
                                       "0.90" = 0.90,
                                       "0.95" = 0.95,
                                       "0.99" = 0.99)
-                             })
+                             }),
+  # learner branch
+  branch.selection = p_fct(choices)
 )
 
 # inspect search space - test how it looks
