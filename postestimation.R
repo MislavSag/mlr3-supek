@@ -18,17 +18,20 @@ files_info = file.info(files_)
 files_info = files_info[order(files_info$ctime), ]
 
 # import all benchmarks
-bmrs = readRDS(rownames(files_info)[1])
-Reduce(function(x) bmrs$combine(x), lapply(rownames(files_info)[2:3], readRDS))
-bmrs = as.data.table(bmrs)
+bmr = readRDS(rownames(files_info)[1])
+# Reduce(function(x) bmrs$combine(x), lapply(rownames(files_info)[2:3], readRDS)) # TO IMPORT MULTIPLE
+bmr_dt = as.data.table(bmrs)
 
-bmrs <- Reduce(function(x, y) x$combine(y), lapply(rownames(files_info)[1:3], readRDS))
+# bmrs <- Reduce(function(x, y) x$combine(y), lapply(rownames(files_info)[1:3], readRDS)) # TO IMPORT MULTIPLE
 
 # vector of id coluimns
 id_cols = c("symbol", "date", "yearmonthid", "..row_id")
 
+# help objects
+task_names = lapply(bmr_dt$task, `[[`, "id")
+
 # get backends
-backs = lapply(as.data.table(bmrs)$task, function(task) {
+backs = lapply(bmr_dt$task, function(task) {
   cbind(task$backend$data(cols = c(id_cols, "eps_diff", "nincr", "nincr_2y", "nincr_3y"),
                     rows = task$row_ids),
         task_name = task$id)
@@ -37,7 +40,7 @@ lapply(backs, setnames, "..row_id", "row_ids")
 lapply(backs, function(dt) dt[, yearmonthid := as.Date(yearmonthid, origin = "1970-01-01")])
 
 # get predictions
-predictions = lapply(bmrs$prediction, function(x) as.data.table(x))
+predictions = lapply(bmr_dt$prediction, function(x) as.data.table(x))
 names(predictions) <- task_names
 
 # merge backs and predictions
@@ -50,6 +53,18 @@ predictions = rbindlist(predictions)
 setorder(predictions, task_name, yearmonthid)
 
 # aggregated results
-aggregate = bmrs$aggregate(msrs(c("regr.mse", "regr.mae")))
-months = 
+aggregate = bmr$aggregate(msrs(c("regr.mse", "regr.mae")))
+
+# extract learner results
+bmr_dt$learner[[1]]$archive
+bmr_dt$learner[[1]]$archive$
+bmr_dt$learner[[1]]$archive$benchmark_result$aggregate(msrs(c("regr.mse", "regr.mae")))
+
+# number of components
+bmr_dt$learner[[1]]$state$model$learner$state$model$pca_explained
+bmr_dt$learner[[3]]$state$model$learner$state$model$pca_explained
+ncol(bmr_dt$learner[[3]]$state$model$learner$state$model$pca_explained$rotation)
+bmr_dt$learner[[2]]$state$model$learner$state$model$pca_explained # NO PCA
+
+# 
 
