@@ -30,6 +30,17 @@ PipeOpPCAExplained = R6::R6Class(
                     rank. = n_components)
       self$state = pcr
       self$state$x = NULL
+      
+      # save scores
+      # dir_name = "./pcr"
+      # if (!dir.exists(dir_name)) {
+      #   dir.create(dir_name)
+      # }
+      # random_id <- paste0(sample(0:9, 15, replace = TRUE), collapse = "")
+      # file_name = paste0("pcr-", task$id, "-", random_id, ".rds")
+      # file_name = file.path(dir_name, file_name)
+      # saveRDS(pcr, file_name)
+      
       # self$state$n_components = n_components
       pcr$x
     },
