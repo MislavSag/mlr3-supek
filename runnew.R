@@ -333,6 +333,7 @@ source("PipeOpPCAExplained.R")
 # measures
 source("Linex.R")
 source("AdjLoss2.R")
+source("PortfolioRet.R")
 
 # add my pipes to mlr dictionary
 mlr_pipeops$add("uniformization", PipeOpUniform)
@@ -347,7 +348,7 @@ mlr_filters$add("gausscov_f1st", FilterGausscovF1st)
 mlr_filters$add("gausscov_f3st", FilterGausscovF3st)
 mlr_measures$add("linex", Linex)
 mlr_measures$add("adjloss2", AdjLoss2)
-
+mlr_measures$add("portfolio_ret", PortfolioRet)
 
 
 # GRAPH V2 ----------------------------------------------------------------
