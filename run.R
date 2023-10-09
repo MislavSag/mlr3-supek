@@ -103,31 +103,31 @@ id_cols = c("symbol", "date", "yearmonthid")
 DT[, date := as.POSIXct(date, tz = "UTC")]
 
 # task with future week returns as target
-target_ = colnames(DT)[grep("^ret_excess_stand_5", colnames(DT))]
+target_ = colnames(DT)[grep("^ret.*xcess.*tand.*5", colnames(DT))]
 cols_ = c(id_cols, target_, cols_features)
 task_ret_week <- as_task_regr(DT[, ..cols_],
-                              id = "task_ret_week",
+                              id = "taskRetWeek",
                               target = target_)
 
 # task with future month returns as target
-target_ = colnames(DT)[grep("^ret_excess_stand_22", colnames(DT))]
+target_ = colnames(DT)[grep("^ret.*xcess.*tand.*22", colnames(DT))]
 cols_ = c(id_cols, target_, cols_features)
 task_ret_month <- as_task_regr(DT[, ..cols_],
-                               id = "task_ret_month",
+                               id = "taskRetMonth",
                                target = target_)
 
 # task with future 2 months returns as target
-target_ = colnames(DT)[grep("^ret_excess_stand_44", colnames(DT))]
+target_ = colnames(DT)[grep("^ret.*xcess.*tand.*44", colnames(DT))]
 cols_ = c(id_cols, target_, cols_features)
 task_ret_month2 <- as_task_regr(DT[, ..cols_],
-                                id = "task_ret_month2",
+                                id = "taskRetMonth2",
                                 target = target_)
 
 # task with future 2 months returns as target
-target_ = colnames(DT)[grep("^ret_excess_stand_66", colnames(DT))]
+target_ = colnames(DT)[grep("^ret.*xcess.*tand.*66", colnames(DT))]
 cols_ = c(id_cols, target_, cols_features)
 task_ret_quarter <- as_task_regr(DT[, ..cols_],
-                                 id = "task_ret_quarter",
+                                 id = "taskRetQuarter",
                                  target = target_)
 
 # set roles for symbol, date and yearmonth_id

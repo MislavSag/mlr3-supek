@@ -22,6 +22,8 @@ From: r-base:4.3.0
   R --slave -e 'install.packages("mlr3tuning")'
   R --slave -e 'install.packages("mlr3verse")'
   R --slave -e 'install.packages("mlr3viz")'
+  R --slave -e 'install.packages("mlr3batchmark")'
+  R --slave -e 'install.packages("batchtools")'
   R --slave -e 'install.packages("paradox")'
   R --slave -e 'install.packages("ranger")'
   R --slave -e 'install.packages("R6")'
@@ -35,7 +37,7 @@ From: r-base:4.3.0
   R --slave -e 'remotes::install_github("mlr-org/mlr3extralearners@*release")'
   R --slave -e 'install.packages("torch")'
   R --slave -e 'torch::install_torch()'
-  R --slave -e 'remotes::install_github("mlr-org/mlr3torch")'
+  # R --slave -e 'remotes::install_github("mlr-org/mlr3torch")'
 
 %runscript
   Rscript $@
