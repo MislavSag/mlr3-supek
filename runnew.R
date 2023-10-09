@@ -397,7 +397,7 @@ graph_pca_lrn = as_learner(graph_pca)
 
 # threads
 print("Set threads")
-threads = as.integer(Sys.getenv("NCPUS"))
+threads = 4
 set_threads(graph_pca_lrn, n = threads)
 set_threads(graph_nonpca_lrn, n = threads)
 
