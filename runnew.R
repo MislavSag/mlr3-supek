@@ -396,6 +396,7 @@ plot(graph_pca)
 graph_pca_lrn = as_learner(graph_pca)
 
 # threads
+print("Set threads")
 threads = as.integer(Sys.getenv("NCPUS"))
 set_threads(graph_pca_lrn, n = threads)
 set_threads(graph_nonpca_lrn, n = threads)
@@ -419,6 +420,7 @@ search_space = ps(
 design = rbindlist(generate_design_grid(search_space, 20)$transpose(), fill = TRUE)
 design
 
+print("Create designs")
 designs_l = lapply(custom_cvs[1:2], function(cv_) {
   # debug
   # cv_ = custom_cvs[[1]]
@@ -485,9 +487,11 @@ designs_l = lapply(custom_cvs[1:2], function(cv_) {
 designs = do.call(rbind, designs_l)
 
 # sample design for test
+print("Design samples")
 designs_sample = designs[1:100]
 
 # create registry
+print("Create registry")
 packages = c("data.table", "gausscov", "paradox", "mlr3", "mlr3pipelines",
              "mlr3tuning", "mlr3misc", "future", "future.apply", 
              "mlr3extralearners")
@@ -499,6 +503,7 @@ reg = makeExperimentRegistry(
 )
 
 # populate registry with problems and algorithms to form the jobs
+print("Batchmark")
 batchmark(designs_sample, reg = reg)
 
 # debug
@@ -514,11 +519,13 @@ print(job_table)
 # result = testJob(1, external = TRUE, reg = reg)
 
 # create cluster template
+print("Cluster template")
 cf = makeClusterFunctionsTORQUE("torque-lido.tmpl")
 reg$cluster.functions = cf
 saveRegistry(reg = reg)
 
 # define resources
+print("Set resources")
 resources = list(ncpus = 4, walltime = 3600*24)
 
 # submit job!
