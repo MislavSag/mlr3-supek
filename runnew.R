@@ -530,4 +530,4 @@ print("Set resources")
 resources = list(ncpus = 4, walltime = 3600*24)
 
 # submit job!
-submitJobs(ids = chunks, resources = resources, reg = reg)
+submitJobs(ids = 1:100, resources = resources, reg = reg)
