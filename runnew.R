@@ -11,6 +11,7 @@ library(future.apply)
 library(mlr3extralearners)
 library(batchtools)
 library(mlr3batchmark)
+library(checkmate)
 
 
 
