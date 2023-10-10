@@ -509,12 +509,12 @@ batchmark(designs_sample, reg = reg)
 
 # debug
 print(reg)
-job_table = getJobTable(reg = reg)
-job_table = unwrap(job_table)
-job_table = job_table[,
-                      .(job.id, learner_id, task_id, resampling_id, repl)
-]
-print(job_table)
+# job_table = getJobTable(reg = reg)
+# job_table = unwrap(job_table)
+# job_table = job_table[,
+#                       .(job.id, learner_id, task_id, resampling_id, repl)
+# ]
+# print(job_table)
 
 # # test locally
 # result = testJob(1, external = TRUE, reg = reg)
@@ -530,4 +530,5 @@ print("Set resources")
 resources = list(ncpus = 4, walltime = 3600*24)
 
 # submit job!
+print("Submit job !")
 submitJobs(ids = 1:100, resources = resources, reg = reg)
