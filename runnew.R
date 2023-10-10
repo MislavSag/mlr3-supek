@@ -589,7 +589,7 @@ makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1
 # create cluster template
 print("Cluster template")
 cf = makeClusterFunctionsPBSPro("torque-lido.tmpl")
-reg$cluster.functions = cluster_function
+reg$cluster.functions = cf
 saveRegistry(reg = reg)
 
 # define resources
