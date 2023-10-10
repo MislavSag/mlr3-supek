@@ -568,7 +568,7 @@ makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1
   }
 
   listJobsQueued = function(reg) {
-    args = c("-u", Sys.getenv("USER"))
+    args = c("-u Sys.getenv('USER')")
     jobs = listJobs(reg, args)
     # Filter the jobs based on the states "Queued" and "Waiting"
     jobs_filtered = jobs[grep(" Q | W ", jobs)]
@@ -576,7 +576,7 @@ makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1
   }
 
   listJobsRunning = function(reg) {
-    args = c("-u", Sys.getenv("USER"))
+    args = c("-u  Sys.getenv('USER')")
     jobs = listJobs(reg, args)
     # Filter the jobs based on the states "Exiting", "Held", "Running", or "Transit"
     jobs_filtered = jobs[grep(" E | H | R | T ", jobs)]
