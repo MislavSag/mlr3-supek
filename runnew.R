@@ -519,10 +519,76 @@ print(reg)
 # # test locally
 # result = testJob(1, external = TRUE, reg = reg)
 
+# create cluster function
+makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1, fs.latency = 65) { # nocov start
+  template = findTemplateFile(template)
+  if (testScalarNA(template))
+    stopf("Argument 'template' (=\"%s\") must point to a readable template", template)
+  template = cfReadBrewTemplate(template, "##")
+
+  submitJob = function(reg, jc) {
+    assertRegistry(reg, writeable = TRUE)
+    assertClass(jc, "JobCollection")
+
+    outfile = cfBrewTemplate(reg, template, jc)
+    res = runOSCommand("qsub", shQuote(outfile))
+    output = stri_flatten(stri_trim_both(res$output), "\n")
+
+    if (res$exit.code > 0L) {
+      max.jobs.msg = "Maximum number of jobs already in queue"
+      if (stri_detect_fixed(output, max.jobs.msg) || res$exit.code == 228L)
+        return(makeSubmitJobResult(status = 1L, batch.id = NA_character_, msg = max.jobs.msg))
+      return(cfHandleUnknownSubmitError("qsub", res$exit.code, res$output))
+    }
+
+    if (jc$array.jobs) {
+      logs = sprintf("%s-%i", fs::path_file(jc$log.file), seq_row(jc$jobs))
+      makeSubmitJobResult(status = 0L, batch.id = stri_replace_first_fixed(output, "[]", stri_paste("[", seq_row(jc$jobs), "]")), log.file = logs)
+    } else {
+      makeSubmitJobResult(status = 0L, batch.id = output)
+    }
+  }
+
+  killJob = function(reg, batch.id) {
+    assertRegistry(reg, writeable = TRUE)
+    assertString(batch.id)
+    cfKillJob(reg, "qdel", batch.id)
+  }
+
+  listJobs = function(reg, args) {
+    assertRegistry(reg, writeable = FALSE)
+    res = runOSCommand("qstat", args)
+    if (res$exit.code > 0L)
+      OSError("Listing of jobs failed", res)
+    res$output
+  }
+
+  listJobsQueued = function(reg) {
+    args = c("-u", Sys.getenv("USER"))
+    jobs = listJobs(reg, args)
+    # Filter the jobs based on the states "Queued" and "Waiting"
+    jobs_filtered = jobs[grep(" Q | W ", jobs)]
+    return(jobs_filtered)
+  }
+
+  listJobsRunning = function(reg) {
+    args = c("-u", Sys.getenv("USER"))
+    jobs = listJobs(reg, args)
+    # Filter the jobs based on the states "Exiting", "Held", "Running", or "Transit"
+    jobs_filtered = jobs[grep(" E | H | R | T ", jobs)]
+    return(jobs_filtered)
+  }
+
+  makeClusterFunctions(name = "TORQUE", submitJob = submitJob, killJob = killJob, listJobsQueued = listJobsQueued,
+    listJobsRunning = listJobsRunning, array.var = "PBS_ARRAYID", store.job.collection = TRUE,
+    scheduler.latency = scheduler.latency, fs.latency = fs.latency)
+} # nocov end
+
+
 # create cluster template
 print("Cluster template")
-cf = makeClusterFunctionsTORQUE("torque-lido.tmpl")
-reg$cluster.functions = cf
+cf = makeClusterFunctionsPBSPro("torque-lido.tmpl")
+reg$cluster.functions = cluster_function
 saveRegistry(reg = reg)
 
 # define resources
