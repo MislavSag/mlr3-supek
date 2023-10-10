@@ -6,7 +6,7 @@
 #PBS -j oe
 #PBS -l select=<%= resources$ncpus %>:ncpus=<%= resources$ncpus %>:mem=<%= resources$memory %>
 
-## Comment - cd ${PBS_O_WORKDIR}
+cd ${PBS_O_WORKDIR}
 
 ## Resources needed:
 <% if (length(resources) > 0) {
