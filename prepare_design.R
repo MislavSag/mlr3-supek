@@ -423,7 +423,7 @@ design = rbindlist(generate_design_grid(search_space, 20)$transpose(), fill = TR
 design
 
 print("Create designs")
-designs_l = lapply(custom_cvs[1:2], function(cv_) {
+designs_l = lapply(custom_cvs, function(cv_) {
   # debug
   # cv_ = custom_cvs[[1]]
   
@@ -488,117 +488,25 @@ designs_l = lapply(custom_cvs[1:2], function(cv_) {
 })
 designs = do.call(rbind, designs_l)
 
-# sample design for test
-print("Design samples")
-designs_sample = designs[1:100]
-
-# create registry
-print("Create registry")
-packages = c("data.table", "gausscov", "paradox", "mlr3", "mlr3pipelines",
-             "mlr3tuning", "mlr3misc", "future", "future.apply", 
-             "mlr3extralearners")
-time = strftime(Sys.time(), format = "%Y%m%d%H%M%S")
-reg = makeExperimentRegistry(
-  file.dir = paste0("./experiments-", time),
-  seed = 1,
-  packages = packages
-)
-
-# populate registry with problems and algorithms to form the jobs
-print("Batchmark")
-batchmark(designs_sample, reg = reg)
-
-# debug
-print(reg)
-# job_table = getJobTable(reg = reg)
-# job_table = unwrap(job_table)
-# job_table = job_table[,
-#                       .(job.id, learner_id, task_id, resampling_id, repl)
-# ]
-# print(job_table)
-
-# # test locally
+# # sample design for test
+# print("Design samples")
+# designs_sample = designs[1:100]
+# 
+# # create registry
+# print("Create registry")
+# packages = c("data.table", "gausscov", "paradox", "mlr3", "mlr3pipelines",
+#              "mlr3tuning", "mlr3misc", "future", "future.apply", 
+#              "mlr3extralearners")
+# time = strftime(Sys.time(), format = "%Y%m%d%H%M%S")
+# reg = makeExperimentRegistry(
+#   file.dir = paste0("./experiments-", time),
+#   seed = 1,
+#   packages = packages
+# )
+# 
+# # populate registry with problems and algorithms to form the jobs
+# print("Batchmark")
+# batchmark(designs_sample, reg = reg)
+# 
 # result = testJob(1, external = TRUE, reg = reg)
-
-# create cluster function
-makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1, fs.latency = 65) { # nocov start
-  template = findTemplateFile(template)
-  if (testScalarNA(template))
-    stopf("Argument 'template' (=\"%s\") must point to a readable template", template)
-  template = cfReadBrewTemplate(template, "##")
-
-  submitJob = function(reg, jc) {
-    assertRegistry(reg, writeable = TRUE)
-    assertClass(jc, "JobCollection")
-
-    outfile = cfBrewTemplate(reg, template, jc)
-    res = runOSCommand("qsub", shQuote(outfile))
-    output = stri_flatten(stri_trim_both(res$output), "\n")
-
-    if (res$exit.code > 0L) {
-      max.jobs.msg = "Maximum number of jobs already in queue"
-      if (stri_detect_fixed(output, max.jobs.msg) || res$exit.code == 228L)
-        return(makeSubmitJobResult(status = 1L, batch.id = NA_character_, msg = max.jobs.msg))
-      return(cfHandleUnknownSubmitError("qsub", res$exit.code, res$output))
-    }
-
-    if (jc$array.jobs) {
-      logs = sprintf("%s-%i", fs::path_file(jc$log.file), seq_row(jc$jobs))
-      makeSubmitJobResult(status = 0L, batch.id = stri_replace_first_fixed(output, "[]", stri_paste("[", seq_row(jc$jobs), "]")), log.file = logs)
-    } else {
-      makeSubmitJobResult(status = 0L, batch.id = output)
-    }
-  }
-
-  killJob = function(reg, batch.id) {
-    assertRegistry(reg, writeable = TRUE)
-    assertString(batch.id)
-    cfKillJob(reg, "qdel", batch.id)
-  }
-
-  listJobs = function(reg, args) {
-    assertRegistry(reg, writeable = FALSE)
-    res = runOSCommand("qstat", args)
-    print(res)
-    print(res$exit.code)
-    if (res$exit.code > 0L) {
-      OSError("Listing of jobs failed", res) 
-    }
-    res$output
-  }
-
-  listJobsQueued = function(reg) {
-    args = paste0("-u ", Sys.getenv('USER'))
-    jobs = listJobs(reg, args)
-    # Filter the jobs based on the states "Queued" and "Waiting"
-    jobs_filtered = jobs[grep(" Q | W ", jobs)]
-    return(jobs_filtered)
-  }
-
-  listJobsRunning = function(reg) {
-    args = paste0("-u ", Sys.getenv('USER'))
-    jobs = listJobs(reg, args)
-    # Filter the jobs based on the states "Exiting", "Held", "Running", or "Transit"
-    jobs_filtered = jobs[grep(" E | H | R | T ", jobs)]
-    return(jobs_filtered)
-  }
-
-  makeClusterFunctions(name = "TORQUE", submitJob = submitJob, killJob = killJob, listJobsQueued = listJobsQueued,
-    listJobsRunning = listJobsRunning, array.var = "PBS_ARRAYID", store.job.collection = TRUE,
-    scheduler.latency = scheduler.latency, fs.latency = fs.latency)
-} # nocov end
-
-
-# create cluster template
-print("Cluster template")
-cf = makeClusterFunctionsPBSPro("torque-lido.tmpl")
-reg$cluster.functions = cf
-saveRegistry(reg = reg)
-
-# define resources
-print("Set resources")
-resources = list(ncpus = 4, walltime = 3600*24)
-
-# submit job!
-print("Submit job !")
-submitJobs(ids = 1:100, resources = resources, reg = reg)
+# result$prediction
