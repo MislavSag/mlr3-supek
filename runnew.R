@@ -559,8 +559,11 @@ makeClusterFunctionsPBSPro = function(template = "torque", scheduler.latency = 1
   listJobs = function(reg, args) {
     assertRegistry(reg, writeable = FALSE)
     res = runOSCommand("qstat", args)
-    if (res$exit.code > 0L)
-      OSError("Listing of jobs failed", res)
+    print(res)
+    print(res$exit.code)
+    if (res$exit.code > 0L) {
+      OSError("Listing of jobs failed", res) 
+    }
     res$output
   }
 
