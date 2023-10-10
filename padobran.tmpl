@@ -2,7 +2,7 @@
 
 #PBS -N <%= job.hash %>
 #PBS -o <%= log.file %>
-#PBS -q <%= queue %>
+#PBS -q cpu
 #PBS -j oe
 #PBS -l select=<%= resources$ncpus %>:ncpus=<%= resources$ncpus %>:mem=<%= resources$memory %>
 
