@@ -52,7 +52,7 @@ writeRDS = function (object, file, compress = "gzip") {
 reg = loadRegistry("experiments")
 
 # create job collection
-resources = list(ncpus = 6) # this shouldnt be important
+resources = list(ncpus = 4) # this shouldnt be important
 jc = makeJobCollection(resources = resources, reg = reg)
 
 # extract integer
