@@ -506,23 +506,12 @@ reg = makeExperimentRegistry(
 print("Batchmark")
 batchmark(designs_sample, reg = reg)
 
-# debug
-print(reg)
-# job_table = getJobTable(reg = reg)
-# job_table = unwrap(job_table)
-# job_table = job_table[,
-#                       .(job.id, learner_id, task_id, resampling_id, repl)
-# ]
-# print(job_table)
-
-# # test locally
-# result = testJob(1, external = TRUE, reg = reg)
-
 # create cluster function
 makeClusterFunctionsPBSPro = function(template = "padobran.tmpl", scheduler.latency = 1, fs.latency = 65) {
   template = findTemplateFile(template)
-  if (testScalarNA(template))
+  if (testScalarNA(template)) {
     stopf("Argument 'template' (=\"%s\") must point to a readable template", template)
+  }
   template = cfReadBrewTemplate(template, "##")
   
   submitJob = function(reg, jc) {
