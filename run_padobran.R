@@ -398,11 +398,11 @@ graph_pca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
 plot(graph_pca)
 graph_pca_lrn = as_learner(graph_pca)
 
-# # threads
-# print("Set threads")
-# threads = 4
-# set_threads(graph_pca_lrn, n = threads)
-# set_threads(graph_nonpca_lrn, n = threads)
+# threads
+print("Set threads")
+threads = as.integer(Sys.getenv("NCPUS"))
+set_threads(graph_pca_lrn, n = threads)
+set_threads(graph_nonpca_lrn, n = threads)
 
 # pca params
 as.data.table(graph_pca_lrn$param_set)[, .(id, class, lower, upper)]
@@ -421,7 +421,7 @@ search_space = ps(
 
 # create designs
 print("Create designs")
-designs_l = lapply(custom_cvs[1:2], function(cv_) {
+designs_l = lapply(custom_cvs, function(cv_) {
   # debug
   # cv_ = custom_cvs[[1]]
   
@@ -433,7 +433,6 @@ designs_l = lapply(custom_cvs[1:2], function(cv_) {
   designs_cv_l = lapply(1:cv_inner$iters, function(i) { # 1:cv_inner$iters
     # debug
     # i = 1
-    print(i)
     
     # choose task_
     print(cv_inner$id)
@@ -460,7 +459,6 @@ designs_l = lapply(custom_cvs[1:2], function(cv_) {
     # term_evals = 50
     
     # auto tuner
-    print("Define autotuner")
     at_pca = auto_tuner(
       tuner = tnr("grid_search", resolution = 20, batch_size = 2),
       learner = graph_pca_lrn,
@@ -486,95 +484,20 @@ designs_l = lapply(custom_cvs[1:2], function(cv_) {
 })
 designs = do.call(rbind, designs_l)
 
-# sample design for test
-print("Design samples")
-designs_sample = designs[2*128]
-
 # create registry
 print("Create registry")
 packages = c("data.table", "gausscov", "paradox", "mlr3", "mlr3pipelines",
              "mlr3tuning", "mlr3misc", "future", "future.apply", 
              "mlr3extralearners")
-time = strftime(Sys.time(), format = "%Y%m%d%H%M%S")
 reg = makeExperimentRegistry(
-  file.dir = paste0("./experiments-", time),
+  file.dir = "./experiments",
   seed = 1,
   packages = packages
 )
 
 # populate registry with problems and algorithms to form the jobs
 print("Batchmark")
-batchmark(designs_sample, reg = reg)
+batchmark(designs_sample, reg = reg, store_models = TRUE)
 
-# create cluster function
-makeClusterFunctionsPBSPro = function(template = "padobran.tmpl", scheduler.latency = 1, fs.latency = 65) {
-  template = findTemplateFile(template)
-  if (testScalarNA(template)) {
-    stopf("Argument 'template' (=\"%s\") must point to a readable template", template)
-  }
-  template = cfReadBrewTemplate(template, "##")
-  
-  submitJob = function(reg, jc) {
-    assertRegistry(reg, writeable = TRUE)
-    assertClass(jc, "JobCollection")
-    
-    outfile = cfBrewTemplate(reg, template, jc)
-    res = runOSCommand("qsub", shQuote(outfile))
-    output = stri_flatten(stri_trim_both(res$output), "\n")
-    
-    if (res$exit.code > 0L) {
-      return(cfHandleUnknownSubmitError("qsub", res$exit.code, res$output))
-    }
-    
-    if (jc$array.jobs) {
-      logs = sprintf("%s-%i", fs::path_file(jc$log.file), seq_row(jc$jobs))
-      makeSubmitJobResult(status = 0L, batch.id = stri_replace_first_fixed(output, "[]", stri_paste("[", seq_row(jc$jobs), "]")), log.file = logs)
-    } else {
-      makeSubmitJobResult(status = 0L, batch.id = output)
-    }
-  }
-  
-  killJob = function(reg, batch.id) {
-    assertRegistry(reg, writeable = TRUE)
-    assertString(batch.id)
-    cfKillJob(reg, "qdel", batch.id)
-  }
-  
-  # listJobs = function(reg, args) {
-  #   assertRegistry(reg, writeable = FALSE)
-  #   res = runOSCommand("qstat", args)
-  #   if (res$exit.code > 0L)
-  #     OSError("Listing of jobs failed", res)
-  #   res$output
-  # }
-  # 
-  # listJobsQueued = function(reg) {
-  #   args = c("-u $USER")
-  #   listJobs(reg, args)
-  # }
-  # 
-  # listJobsRunning = function(reg) {
-  #   args = c("-u $USER")
-  #   listJobs(reg, args)
-  # }
-  listJobsQueued = NULL
-  listJobsRunning = NULL
-  
-  makeClusterFunctions(name = "PBSPro", submitJob = submitJob, killJob = killJob, listJobsQueued = listJobsQueued,
-                       listJobsRunning = listJobsRunning, array.var = "PBS_ARRAY_INDEX", store.job.collection = TRUE,
-                       scheduler.latency = scheduler.latency, fs.latency = fs.latency)
-}
-
-# create cluster template
-print("Cluster template")
-cf = makeClusterFunctionsPBSPro("padobran.tmpl")
-reg$cluster.functions = cf
+# save registry
 saveRegistry(reg = reg)
-
-# define resources
-print("Set resources")
-resources = list(ncpus = 128, select=2, walltime = 3600*24)
-
-# submit job!
-print("Submit job !")
-submitJobs(ids = 1:nrow(designs_sample), resources = resources, reg = reg)
