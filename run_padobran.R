@@ -497,7 +497,7 @@ reg = makeExperimentRegistry(
 
 # populate registry with problems and algorithms to form the jobs
 print("Batchmark")
-batchmark(designs_sample, reg = reg, store_models = TRUE)
+batchmark(designs, reg = reg, store_models = TRUE)
 
 # save registry
 saveRegistry(reg = reg)
