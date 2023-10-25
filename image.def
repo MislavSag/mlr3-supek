@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: r-base:4.3.0
+From: r-base:4.3.1
 
 %post
 
@@ -45,7 +45,7 @@ From: r-base:4.3.0
   R --slave -e 'remotes::install_url("https://github.com/catboost/catboost/releases/download/v1.2.1/catboost-R-Linux-1.2.2.tgz", build_opts = c("--no-multiarch", "--no-test-load"))'
   R --slave -e 'install.packages("torch")'
   R --slave -e 'torch::install_torch()'
-  R --slave -e 'remotes::install_github("mlr-org/mlr3torch")'
+  # R --slave -e 'remotes::install_github("mlr-org/mlr3torch")'
 
 %runscript
   Rscript $@
