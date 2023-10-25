@@ -482,7 +482,7 @@ designs = do.call(rbind, designs_l)
 # create registry
 print("Create registry")
 packages = c("data.table", "gausscov", "paradox", "mlr3", "mlr3pipelines",
-             "mlr3tuning", "mlr3misc", "future", "future.apply", 
+             "mlr3tuning", "mlr3misc", "future", "future.apply",
              "mlr3extralearners")
 reg = makeExperimentRegistry(
   file.dir = "./experiments",
