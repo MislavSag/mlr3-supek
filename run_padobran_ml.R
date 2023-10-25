@@ -448,10 +448,15 @@ designs_l = lapply(custom_cvs, function(cv_) {
     
     # inner resampling
     custom_ = rsmp("custom")
-    custom_$id = paste0("custom_", cv_inner$iters, "_", i)
     custom_$instantiate(task_ret_week,
                         list(cv_inner$train_set(i)),
                         list(cv_inner$test_set(i)))
+    
+    # objects for all autotuners
+    measure_ = msr("portfolio_ret")
+    tuner_   = tnr("hyperband", eta = 4)
+    # tuner_   = tnr("mbo")
+    # term_evals = 50
     
     # auto tuner
     at_pca = auto_tuner(
@@ -462,9 +467,9 @@ designs_l = lapply(custom_cvs, function(cv_) {
       search_space = search_space
     )
     
+    
     # outer resampling
     customo_ = rsmp("custom")
-    customo_$id = paste0("custom_", cv_inner$iters, "_", i)
     customo_$instantiate(task_, list(cv_outer$train_set(i)), list(cv_outer$test_set(i)))
     
     # nested CV for one round
@@ -494,5 +499,13 @@ reg = makeExperimentRegistry(
 print("Batchmark")
 batchmark(designs, reg = reg, store_models = TRUE)
 
-# save registry
+# cluter function template
+cf = makeClusterFunctionsSlurm(template = "torque-lido.tmpl")
+reg$cluster.functions = cf
 saveRegistry(reg = reg)
+
+# set resources
+resources = list(ncpus = 1, walltime = 3600, memory = 8000)
+
+# submit jobs
+submitJobs(ids = chunks, resources = resources, reg = reg)
