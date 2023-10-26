@@ -5,7 +5,7 @@ From: r-base:4.3.0
 
   # apt
   apt update
-  apt install -y libssl-dev libxml2-dev libcurl4-openssl-dev libicu-dev libicu60
+  apt install -y libssl-dev libxml2-dev libcurl4-openssl-dev libicu-dev
 
   # mlr3
   R --slave -e 'install.packages("stringi", type = "source")'
