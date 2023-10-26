@@ -8,7 +8,7 @@ From: r-base:4.3.1
   apt install libssl-dev -y
   apt install libxml2-dev -y
   apt install libcurl4-openssl-dev -y
-  apt install libicu-devel -y
+  apt install libicu-dev -y
 
   # mlr3
   R --slave -e 'install.packages("batchtools")'
