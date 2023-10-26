@@ -4,7 +4,7 @@
 #PBS -l ncpus=4
 #PBS -l mem=15GB
 #PBS -J 1-1933
-#PBS -o experiments2/logs
+#PBS -o experiments/logs
 #PBS -j oe
 
 cd ${PBS_O_WORKDIR}
