@@ -2,7 +2,7 @@
 
 #PBS -N H2results
 #PBS -l ncpus=1
-#PBS -l mem=25GB
+#PBS -l mem=40GB
 #PBS -j oe
 
 cd ${PBS_O_WORKDIR}

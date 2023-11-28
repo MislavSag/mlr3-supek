@@ -40,7 +40,7 @@ reg$status$done = batchtools:::ustamp()
 # rbind(ids_notdone, ids_done[job.id %in% results_files])
 
 # get results----
-results = lapply(1:20, function(id_) { # 1187
+results = lapply(1:1187, function(id_) {
   # bmr object
   bmr_ = reduceResultsBatchmark(id_, store_backends = FALSE, reg = reg)
   # aggregated results
