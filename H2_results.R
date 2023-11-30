@@ -19,6 +19,22 @@ library(purrr)
 # library(multcomp)
 
 
+# Import command line arguments
+args = commandArgs()
+
+# Ensure there are enough arguments
+if(length(args) < 2) {
+  stop("Not enough arguments. Please provide id_1 and id_2.")
+}
+
+# Assign the arguments to variables
+id_1 = as.integer(args[1])
+id_2 = as.integer(args[2])
+
+# Create directory to save files if it doesnt exist
+if (!dir.exists("results")) {
+  dir.create("results")
+}
 
 # load registry----
 if (interactive()) {
@@ -40,7 +56,7 @@ reg$status$done = batchtools:::ustamp()
 # rbind(ids_notdone, ids_done[job.id %in% results_files])
 
 # get results----
-results = lapply(1:200, function(id_) {
+results = lapply(id_1:id_2, function(id_) {
   # bmr object
   bmr_ = reduceResultsBatchmark(id_, store_backends = FALSE, reg = reg)
   # aggregated results
@@ -224,7 +240,8 @@ average_tuned_model_descriptives_list <- lapply(instances_archives, transform_da
 average_tuned_model_descriptives_df <- do.call(rbind, average_tuned_model_descriptives_list)
 
 # save files
-saveRDS(aggregates_df, "aggregates_df.rds")
-saveRDS(average_tuned_df, "average_tuned_df.rds")
-saveRDS(average_tuned_model_descriptives_df, "average_tuned_model_descriptives_df.rds")
-saveRDS(best_tuned_df, "best_tuned_df.rds")
+save_file = function(tag, id1, id2) paste0("results/", tag, "_", id1, "_", id2, ".rds")
+saveRDS(aggregates_df, save_file("aggregates", id_1, id_2))
+saveRDS(average_tuned_df, save_file("average_tuned", id_1, id_2))
+saveRDS(average_tuned_model_descriptives_df, save_file("average_tuned_model_descriptives", id_1, id_2))
+saveRDS(best_tuned_df, save_file("best_tuned", id_1, id_2))
