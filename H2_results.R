@@ -20,7 +20,7 @@ library(purrr)
 
 
 # Import command line arguments
-args = commandArgs()
+args = commandArgs(trailingOnly = TRUE)
 
 # Ensure there are enough arguments
 if(length(args) < 2) {
