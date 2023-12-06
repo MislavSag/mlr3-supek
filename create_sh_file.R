@@ -11,7 +11,7 @@ sh_file = "
 cd ${PBS_O_WORKDIR}
 "
 
-id_seq = seq(1, 1187, 30)
+id_seq = seq(1, 1187, 50)
 id_seq_sh = paste0(
   "apptainer run image.sif H2_results.R ",
   id_seq, " ",

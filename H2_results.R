@@ -28,8 +28,11 @@ if(length(args) < 2) {
 }
 
 # Assign the arguments to variables
+cat(args, sep = "\n")
 id_1 = as.integer(args[1])
 id_2 = as.integer(args[2])
+cat("Argument 1 is ", id_1)
+cat("Argument 2 is ", id_2)
 
 # Create directory to save files if it doesnt exist
 if (!dir.exists("results")) {
