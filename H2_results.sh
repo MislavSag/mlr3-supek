@@ -8,5 +8,5 @@
 
 cd ${PBS_O_WORKDIR}
 
-apptainer run image.sif H2_results.R 901 950
-apptainer run image.sif H2_results.R 951 1000
+apptainer run image.sif H2_results.R 901 901
+apptainer run image.sif H2_results.R 951 953

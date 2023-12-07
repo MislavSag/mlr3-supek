@@ -40,11 +40,12 @@ if (!dir.exists("results")) {
 }
 
 # load registry----
-if (interactive()) {
-  reg = loadRegistry("D:/LUKA/Joško/H2/Padobran", work.dir="D:/LUKA/Joško/H2/Padobran")  
-} else {
-  reg = loadRegistry("experiments")
-}
+# if (interactive()) {
+#   reg = loadRegistry("D:/LUKA/Joško/H2/Padobran", work.dir="D:/LUKA/Joško/H2/Padobran")  
+# } else {
+#   reg = loadRegistry("experiments")
+# }
+reg = loadRegistry("experiments")
 
 # used memory----
 reg$status[!is.na(mem.used)]
