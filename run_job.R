@@ -106,11 +106,15 @@ UpdateBuffer = R6Class(
 
 # RUN JOB -----------------------------------------------------------------
 # load registry
-reg = loadRegistry("experiments")
+if (interactive()) {
+  reg = loadRegistry("experiments_test")
+} else {
+  reg = loadRegistry("experiments")
+}
 
 # extract integer
 i = as.integer(Sys.getenv('PBS_ARRAY_INDEX'))
-# i = 3L
+# i = 1L
 
 # extract not done ids
 ids_not_done = findNotDone(reg=reg)
