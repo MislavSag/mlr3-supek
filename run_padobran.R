@@ -450,7 +450,7 @@ graph_pca = po("dropnacol", id = "dropnacol", cutoff = 0.05) %>>%
   po("uniformization") %>>%
   po("dropna", id = "dropna_v2") %>>%
   # po("pca") %>>%
-  po("pca_explained", var. = 0.99) %>>%
+  po("pca_explained") %>>%
   learners
 plot(graph_pca)
 graph_pca_lrn = as_learner(graph_pca)
@@ -554,7 +554,7 @@ if (interactive()) {
   dirname_ = "experiments_test"
   if (dir.exists(dirname_)) system(paste0("rm -r ", dirname_))
 } else {
-  dirname_ = "experimentsmonth"
+  dirname_ = "experiments"
 }
 
 # create registry

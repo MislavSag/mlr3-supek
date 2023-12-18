@@ -47,20 +47,14 @@ if (!dir.exists("results")) {
 # }
 reg = loadRegistry("experiments")
 
-# used memory----
-reg$status[!is.na(mem.used)]
-reg$status[, max(mem.used, na.rm = TRUE)]
-reg$status$done = batchtools:::ustamp()
-
 # done jobs----
-# results_files = fs::path_ext_remove(fs::path_file(dir_ls"D:/LUKA/Joško/H2/Padobran/results")))
-# ids_done = findDone(reg=reg)
-# ids_done = ids_done[job.id %in% results_files]
-# ids_notdone = findNotDone(reg=reg)
+ids_done = findDone(reg=reg)
+ids_done = ids_done[job.id %in% id_1:id_2]
+ids_notdone = findNotDone(reg=reg)
 # rbind(ids_notdone, ids_done[job.id %in% results_files])
 
 # get results----
-results = lapply(id_1:id_2, function(id_) {
+results = lapply(ids_done[, job.id], function(id_) {
   # bmr object
   bmr_ = reduceResultsBatchmark(id_, store_backends = FALSE, reg = reg)
   # aggregated results
