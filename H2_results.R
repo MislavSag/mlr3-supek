@@ -45,7 +45,7 @@ if (!dir.exists("results")) {
 # } else {
 #   reg = loadRegistry("experiments")
 # }
-reg = loadRegistry("experimentsmoth")
+reg = loadRegistry("experimentsmonth")
 
 # done jobs----
 ids_done = findDone(reg=reg)
