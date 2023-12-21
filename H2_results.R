@@ -40,8 +40,8 @@ if (!dir.exists("results")) {
 }
 
 # if file best tuned already exists stop script
-file_ = paste0("best_tuned_", id_1, "_", id_2, ".rds")
-if (file_) {
+file_ = file.path("results", paste0("best_tuned_", id_1, "_", id_2, ".rds"))
+if (file.exists(file_)) {
   print("Already exists")
 } else {
   # load registry----
